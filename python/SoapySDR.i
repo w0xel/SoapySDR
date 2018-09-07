@@ -84,6 +84,23 @@
     %}
 };
 
+%template(SoapySDR_StringToSetting_bool) SoapySDR::StringToSetting<bool>;
+%template(SoapySDR_StringToSetting_int) SoapySDR::StringToSetting<long long>;
+%template(SoapySDR_StringToSetting_float) SoapySDR::StringToSetting<double>;
+%template(SoapySDR_StringToSetting_string) SoapySDR::StringToSetting<std::string>;
+
+%insert("python")
+%{
+    def StringToSetting(s, type=str):
+        if type == bool: return SoapySDR_StringToSetting_bool(s)
+        if type == int: return SoapySDR_StringToSetting_int(s)
+        if type == float: return SoapySDR_StringToSetting_float(s)
+        return SoapySDR_StringToSetting_string(s)
+%}
+
+%template(SoapySDR_SettingToString_int) SoapySDR::SettingToString<long long>;
+%template(SoapySDR_SettingToString_string) SoapySDR::SettingToString<std::string>;
+
 ////////////////////////////////////////////////////////////////////////
 // Stream result class
 // Helps us deal with stream calls that return by reference
@@ -168,6 +185,11 @@ def extractBuffPointer(buff):
 
 %extend SoapySDR::Device
 {
+
+    %template(readSensor__) SoapySDR::Device::readSensor<std::string>;
+    %template(writeSetting__) SoapySDR::Device::writeSetting<std::string>;
+    %template(readSetting__) SoapySDR::Device::readSetting<std::string>;
+
     StreamResult readStream__(SoapySDR::Stream *stream, const std::vector<size_t> &buffs, const size_t numElems, const int flags, const long timeoutUs)
     {
         StreamResult sr;
@@ -214,5 +236,15 @@ def extractBuffPointer(buff):
 
         def readStreamStatus(self, stream, timeoutUs = 100000):
             return self.readStreamStatus__(stream, timeoutUs)
+
+        def readSensor(self, *args, **kwargs):
+            return StringToSetting(self.readSensor__(*args), **kwargs)
+
+        def writeSetting(self, *args):
+            a = list(args[:-1]) + [SettingToString(args[-1])]
+            return self.writeSetting__(*a)
+
+        def readSetting(self, *args, **kwargs):
+            return StringToSetting(self.readSetting__(*args), **kwargs)
     %}
 };
