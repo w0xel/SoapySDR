@@ -157,7 +157,8 @@ else()
 SWIG_ADD_LIBRARY(SoapySDR LANGUAGE python SOURCES SoapySDR.i)
 endif()
 
-SWIG_LINK_LIBRARIES(SoapySDR ${SoapySDR_LIBRARIES} ${PYTHON_LIBRARIES})
+find_library(PYTHON_LIB python2.7)
+SWIG_LINK_LIBRARIES(SoapySDR ${SoapySDR_LIBRARIES} ${PYTHON_LIB})
 
 ########################################################################
 # Install Module
